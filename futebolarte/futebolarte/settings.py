@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+from decouple import config
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -80,7 +80,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "futebolarte",
         "USER": "futebol",
-        "PASSWORD": "FT4tMZyYnYPkWbXUD4W3mIVsnA9Tu1vl",
+        "PASSWORD": config("DB_PASSWORD"),
         "HOST": "dpg-cnkb0ala73kc73eg0lug-a.oregon-postgres.render.com",
         "PORT": "5432",
     }
