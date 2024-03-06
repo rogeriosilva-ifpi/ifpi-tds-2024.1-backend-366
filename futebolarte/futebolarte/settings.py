@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-ry1kbhc^@96i!#i($#*y%-$c&0m***ye^-tbm4!si98s4eeq5f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['futebolarte-366.onrender.com']
+
+CSRF_TRUSTED_ORIGINS = ['https://futebolarte-366.onrender.com']
 
 
 # Application definition
