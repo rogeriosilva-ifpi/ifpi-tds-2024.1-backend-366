@@ -1,4 +1,5 @@
-const API_URL = 'http://127.0.0.1:8000/exercicios'
+// const API_URL = 'http://127.0.0.1:8000/exercicios'
+const API_URL = 'https://erickgym-api-366.onrender.com/exercicios'
 
 function main(){
 
