@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Aluno(models.Model):
@@ -13,3 +14,10 @@ class Aluno(models.Model):
     sexo = models.CharField(max_length=1, choices=SEXO_CHOICES)
     data_nascimento = models.DateField()
     foto = models.ImageField(upload_to='alunos', null=True, blank=True)
+
+    usuario = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        default=None
+    )
