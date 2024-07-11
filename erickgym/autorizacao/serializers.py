@@ -2,6 +2,13 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 
 
+class UserSimpleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['username']
+
+
 class UserSerializer(serializers.ModelSerializer):
     # significa que "password" será só recebido(request)
     # mas não devolvido(response)
