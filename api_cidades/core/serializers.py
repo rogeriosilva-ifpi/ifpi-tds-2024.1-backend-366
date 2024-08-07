@@ -5,7 +5,7 @@ from core.models import Cidade, Estado
 class CidadeSerializer(ModelSerializer):
     class Meta:
         model = Cidade
-        fields = ['nome']
+        fields = ['id', 'nome']
 
     def validade_nome(self, value):
         if len(value) < 3:
@@ -20,6 +20,10 @@ class CidadeSerializer(ModelSerializer):
 
 
 class EstadoSerializer(ModelSerializer):
+
+    cidades = CidadeSerializer(many=True, read_only=True)
+
     class Meta:
-        mode = Estado
-        fields = ['sigla', 'nome']
+        model = Estado
+        fields = ['sigla', 'nome', 'cidades']
+        # fields = '__all__'
