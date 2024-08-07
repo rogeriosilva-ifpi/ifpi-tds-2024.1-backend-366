@@ -1,0 +1,29 @@
+GET http://localhost:8000/api/estados HTTP/1.1
+
+### 
+POST http://localhost:8000/api/estados HTTP/1.1
+Content-Type: application/json
+
+{
+  "nome": "Rio Grande do Norte",
+  "sigla": "RN"
+}
+
+###
+GET http://localhost:8000/api/estados/2 HTTP/1.1
+
+###
+DELETE  http://localhost:8000/api/estados/3 HTTP/1.1
+
+###
+PUT http://localhost:8000/api/estados/2 HTTP/1.1
+Content-Type: application/json
+
+{
+  "nome": "CEARÁ",
+  "sigla": "CE"
+}
+
+###
+POST http://localhost:8000/api/estados/1/cidades HTTP/1.1
+

@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from django.http import Http404
 from .models import Aluno
 from .serializers import AlunoSerializer
 
@@ -27,30 +28,23 @@ class ListCreateAlunoView(ListCreateAPIView):
     serializer_class = AlunoSerializer
 
     def get_queryset(self):
-        usuario = self.request.user
-        return Aluno.objects.filter(usuario=usuario)
+        usuario_logado = self.request.user
+        return Aluno.objects.filter(usuario=usuario_logado)
 
-    def post(self, request):
-        request.data['usuario'] = request.user.pk
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    def perform_create(self, serializer):
+        usuario_logado = self.request.user
+        serializer.save(usuario=usuario_logado)
 
 
 class DetailUpdateDeleteAlunosView(RetrieveUpdateDestroyAPIView):
     queryset = Aluno.objects.all()
     serializer_class = AlunoSerializer
 
-    def put(self, request, pk, *args, **kwargs):
-        user = request.user
-        aluno = Aluno.objects.get(pk=pk)
+    def get_object(self):
+        aluno = super().get_object()
+        usuario_logado = self.request.user
 
-        if aluno.usuario != user:
-            return Response(
-                {'detail': 'Você só pode editar seu próprio perfil'},
-                status=400
-            )
-
-        return self.update(request, *args, **kwargs)
+        if (usuario_logado != aluno.usuario):
+            raise Http404
+        else:
+            return aluno
