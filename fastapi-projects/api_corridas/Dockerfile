@@ -1,9 +1,13 @@
-FROM bitnami/python:3.11.1
-WORKDIR /app
+FROM python:3.11.6-slim-bullseye
 
-COPY . /app
+WORKDIR /home/app
 
-RUN pip install --no-cache-dir -r requirements.txt
+COPY ./requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY . .
 
 EXPOSE 8000
-CMD python -m fastapi dev server.py
+
+CMD [ "fastapi", "run", "server.py", "0.0.0.0:8000" ]
