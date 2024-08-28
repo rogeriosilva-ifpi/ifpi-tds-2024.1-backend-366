@@ -3,6 +3,8 @@ from dtos import RequisicaoCorrida
 from models import Corrida
 from utils import calcular_valor
 from ulid import ULID
+from sqlmodel import Session, select
+from database import get_engine
 
 
 router = APIRouter()
@@ -11,42 +13,41 @@ corridas = [
   Corrida(
     id=str(ULID()),
     origem='IFPI THE Central', 
-    destino='Riverside', 
+    destino='Timon', 
     distancia=7, 
     valor=calcular_valor(7)),
 ]
 
-def get_corrida_by_id(id: str):
-  for corrida in corridas:
-    if corrida.id == id:
-      return corrida
-  
-  return None
+def get_corrida_by_id(id: int):
+  session = Session(get_engine())
+  sttm = select(Corrida).where(Corrida.id==id)
+  return session.exec(sttm).one_or_none()
 
 @router.get('/', response_model=list[Corrida])
 def corrida_list(estado: str | None = None):
+  with Session(get_engine()) as session:
+    sttm = select(Corrida)
+    
+    if estado:
+      sttm = sttm.where(Corrida.estado==estado)
 
-  if estado:
-    # significa que é para filtrar
-    corridas_filtradas = []
-    for corrida in corridas:
-      if corrida.estado == estado:
-        corridas_filtradas.append(corrida)
-    return corridas_filtradas
-
-  return corridas
+    return session.exec(sttm).all()
 
 
 @router.post('/', 
           response_model=Corrida, 
           status_code=status.HTTP_201_CREATED)
 def corrida_create(requisicao: RequisicaoCorrida):
-  nova_corrida = Corrida(id=str(ULID()),
-                        origem=requisicao.origem,
+  nova_corrida = Corrida(origem=requisicao.origem,
                          destino=requisicao.destino,
                          distancia=requisicao.distancia, 
                          valor=calcular_valor(requisicao.distancia))
-  corridas.append(nova_corrida)
+  # Mandar o BD
+  with Session(get_engine()) as session:
+    session.add(nova_corrida)
+    session.commit()
+    session.refresh(nova_corrida)
+
   return nova_corrida
 
 @router.put('/{id}/start')
@@ -64,6 +65,10 @@ def corrida_start(id: str):
       detail='Não é possível iniciar essa corrida!')
   
   corrida_localizada.estado = 'em-andamento'
+
+  session = Session(get_engine())
+  session.commit()
+  session.refresh(corrida_localizada)
 
   return corrida_localizada
 

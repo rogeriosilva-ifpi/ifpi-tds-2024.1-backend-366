@@ -1,7 +1,10 @@
-from pydantic import BaseModel
+# from pydantic import BaseModel
+from sqlalchemy import table
+from sqlmodel import SQLModel, Field
 
-class Corrida(BaseModel):
-  id: str | None
+# class Corrida(BaseModel):
+class Corrida(SQLModel, table=True):
+  id: int | None = Field(primary_key=True, default=None)
   origem: str
   destino: str
   distancia: float
