@@ -5,33 +5,23 @@ from utils import calcular_valor
 from ulid import ULID
 from sqlmodel import Session, select
 from database import get_engine
+from corridas_service import CorridaService
 
 
 router = APIRouter()
 
-corridas = [
-  Corrida(
-    id=str(ULID()),
-    origem='IFPI THE Central', 
-    destino='Timon', 
-    distancia=7, 
-    valor=calcular_valor(7)),
-]
+# Corrida Service
+corrida_service = CorridaService()
 
-def get_corrida_by_id(id: int):
-  session = Session(get_engine())
-  sttm = select(Corrida).where(Corrida.id==id)
-  return session.exec(sttm).one_or_none()
+
+@router.get("/{id}")
+def corrida_detail(id: int):
+  return corrida_service.get_corrida_by_id(id)
+
 
 @router.get('/', response_model=list[Corrida])
 def corrida_list(estado: str | None = None):
-  with Session(get_engine()) as session:
-    sttm = select(Corrida)
-    
-    if estado:
-      sttm = sttm.where(Corrida.estado==estado)
-
-    return session.exec(sttm).all()
+  return corrida_service.get_all_corridas(estado)
 
 
 @router.post('/', 
@@ -42,39 +32,32 @@ def corrida_create(requisicao: RequisicaoCorrida):
                          destino=requisicao.destino,
                          distancia=requisicao.distancia, 
                          valor=calcular_valor(requisicao.distancia))
-  # Mandar o BD
-  with Session(get_engine()) as session:
-    session.add(nova_corrida)
-    session.commit()
-    session.refresh(nova_corrida)
 
-  return nova_corrida
+  return corrida_service.save_corrida(nova_corrida)
+
 
 @router.put('/{id}/start')
 def corrida_start(id: str):
-  corrida_localizada = get_corrida_by_id(id)
+  corrida_localizada = corrida_service.get_corrida_by_id(id)
 
   if not corrida_localizada:
     raise HTTPException(
       status_code=status.HTTP_404_NOT_FOUND, 
       detail='Corrida não localizada!')
-  
-  if not corrida_localizada.estado == 'requisitada':
+    
+  try:
+    corrida_localizada.start()
+  except:
     raise HTTPException(
       status_code=status.HTTP_400_BAD_REQUEST, 
       detail='Não é possível iniciar essa corrida!')
-  
-  corrida_localizada.estado = 'em-andamento'
 
-  session = Session(get_engine())
-  session.commit()
-  session.refresh(corrida_localizada)
+  return corrida_service.save_corrida(corrida_localizada)
 
-  return corrida_localizada
 
 @router.put('/{id}/finish')
-def corrida_start(id: str):
-  corrida_localizada = get_corrida_by_id(id)
+def corrida_finish(id: str):
+  corrida_localizada = corrida_service.get_corrida_by_id(id)
 
   if not corrida_localizada:
     raise HTTPException(
@@ -88,12 +71,12 @@ def corrida_start(id: str):
   
   corrida_localizada.estado = 'finalizada'
 
-  return corrida_localizada
+  return corrida_service.save_corrida(corrida_localizada)
 
 
 @router.put('/{id}/cancel')
-def corrida_start(id: str):
-  corrida_localizada = get_corrida_by_id(id)
+def corrida_cancel(id: str):
+  corrida_localizada = corrida_service.get_corrida_by_id(id)
 
   if not corrida_localizada:
     raise HTTPException(
@@ -107,6 +90,5 @@ def corrida_start(id: str):
   
   corrida_localizada.estado = 'cancelada'
 
-  return corrida_localizada
-
+  return corrida_service.save_corrida(corrida_localizada)
 
